@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+NoDisplay=false
+Type=Application
+Terminal=false
+Icon=HOME/.local/share/gse-zip-tool/gse-zip-tool.png
+Name=GSE Zip Tool
+Exec=HOME/.local/bin/gse-zip-tool
+Comment=Gnome Shell Extension Zip Tool

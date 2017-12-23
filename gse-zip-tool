@@ -1,0 +1,255 @@
+#!/usr/bin/python3
+
+"""
+   Gnome Shell Extension Zip Tool
+
+   Copyright (c) 2017 Norman L. Smith
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This software is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import argparse
+import json
+import os
+import random
+import shutil
+import subprocess
+import sys
+import tempfile
+import zipfile
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gio, Gdk, GLib
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_dir', type=str, default=os.environ['HOME'] + '/.local/share/gse-zip-tool')
+parser.add_argument('--id', type=str, default='org.nls1729.gse-zip-tool')
+parsed_args = parser.parse_args()
+
+def _(string):
+    return string
+
+VERSION = "Version: 0.0.2"
+COMMIT = "Commit: d514e53683b5504d1dd28ee51ffc565d9fffd016"
+
+
+class Main(object):
+
+    def __init__(self, window):
+        self.window = window
+        self.builder = Gtk.Builder()
+        self.data_dir = parsed_args.data_dir
+        self.builder.add_from_file(self.data_dir + '/gse-zip-tool.ui')
+        self.about = self.builder.get_object('about')
+        version = self.builder.get_object('version')
+        version.set_text(VERSION)
+        link = self.builder.get_object('link')
+        link.set_label(_("Website"))
+        license = self.builder.get_object('license')
+        license.set_label(_("License"))
+        commit = self.builder.get_object('commit')
+        commit.set_text(COMMIT)
+        self.about.set_transient_for(self.window)
+        box = self.builder.get_object('box')
+        self.install = self.builder.get_object('install')
+        self.window.add(box) 
+        self.text_buffer = self.builder.get_object('textbuffer')
+        self.text_view = self.builder.get_object('text_view')
+        end_iter = self.text_buffer.get_end_iter()
+        self.text_mark = self.text_buffer.create_mark("TM", end_iter, False)
+        self.builder.connect_signals(self)
+        self.window.set_default_size(780, 240)
+        self.local_extension_dir = os.path.join(GLib.get_user_data_dir(),
+                                                           "gnome-shell",
+                                                            "extensions")
+
+    def display_message(self, message):  
+        end_iter = self.text_buffer.get_end_iter()       
+        self.text_buffer.insert(end_iter, message + '\n', -1)
+        self.text_view.scroll_to_mark(self.text_mark, 0.0, False, 1.0, 1.0)
+
+    def do_about(self, btn):
+        self.about.run()
+
+    def hide_about(self, btn, data=None):
+        self.about.hide()
+      
+    def do_open(self, btn):
+        self.display_message("\n")
+        filter_ = Gtk.FileFilter()
+        if self.install.get_active():
+            prompt = _("Select extension zip file")
+            action = Gtk.FileChooserAction.OPEN
+            filter_.set_name("Zip files")
+            filter_.add_pattern("*.zip")
+            current_folder = os.environ['HOME']
+        else:
+            prompt = _("Select local extension directory")
+            action = Gtk.FileChooserAction.SELECT_FOLDER
+            filter_.set_name("Extension Directory")
+            filter_.add_pattern("*@*")
+            current_folder = self.local_extension_dir
+        dialog = Gtk.FileChooserDialog(prompt, self.window, action,
+                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        dialog.set_current_folder(current_folder)
+        dialog.add_filter(filter_)
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            self.display_message(_("Selected"))
+            target = dialog.get_filename()
+            self.display_message(target)
+            if self.install.get_active():
+                self.install_zip(target)
+            else:
+                self.uninstall_extension(target)
+        else:
+            self.display_message(_("Selection cancelled"))
+        dialog.destroy()
+
+    def uninstall_extension(self, target):
+        uuid = os.path.split(target)[1]
+        ext_dir = os.path.split(target)[0]
+        try:
+            if self.local_extension_dir != ext_dir:
+                self.display_message(_("Selection is not in local extension directory"))
+                raise Exception("Invalid extension")
+            with open(os.path.join(target, 'metadata.json')) as file:
+                try:
+                    name = json.load(file)["name"]
+                except:
+                    self.display_message(_("name not found"))
+                    raise Exception("Invalid extension")
+                title = _("Uninstall Extension")
+                name_uuid = name + '  (uuid ' + uuid + ')'
+                question = _("Do you want to uninstall '%s' ?") % name_uuid
+                dialog = Gtk.MessageDialog(transient_for=self.window,
+                               flags=0,
+                               message_type=Gtk.MessageType.QUESTION,
+                               buttons=Gtk.ButtonsType.YES_NO,
+                               text=title)
+                dialog.format_secondary_text(question)
+                response = dialog.run()
+                if response == Gtk.ResponseType.YES:
+                    if os.path.exists(target):
+                        shutil.rmtree(target)
+                        self.display_message(_("Uninstall completed for %s") % name)
+                        self.display_message(_("Logout then login to restart your session"))
+                    else:
+                        self.display_message(_("Unexpected error"))
+                else:
+                    self.display_message(_("Uninstall cancelled"))
+                dialog.destroy()
+        except:
+            self.display_message(_("Invalid extension"))
+
+    def install_zip(self, zip_file_name):
+        def install_extension_zip_file(that, member, zip_internal_path, dest):
+            tmp_dir = tempfile.mkdtemp()
+            tmp_destination = os.path.join(tmp_dir, zip_internal_path)
+            success = True
+            update = False
+            try:
+                if os.path.exists(dest):
+                    shutil.rmtree(dest)
+                    update = True
+                member.extractall(tmp_dir)
+                shutil.copytree(tmp_destination, dest)
+            except:
+                success = False
+                that.display_message(_("Error installing zip"))
+            if success:
+                that.display_message(_("Installation complete")) 
+            return success, update
+
+        with zipfile.ZipFile(zip_file_name, 'r') as ext_zip:
+             try:
+                 extension_dot_js = None
+                 metadata_dot_json = None
+                 for name in ext_zip.namelist():
+                     if name.endswith("metadata.json"):
+                         zip_internal_path = name.split("/")[0:-1]                       
+                         metadata_dot_json = name
+                     if name.endswith("extension.js"):
+                         if extension_dot_js:
+                             self.display_message(_("Only one extension allowed"))
+                             raise Exception("Invalid extension")
+                         extension_dot_js = name
+                 if not metadata_dot_json:
+                     self.display_message(_("metadata.json not found"))
+                     raise Exception("Invalid extension")
+                 if not extension_dot_js:
+                     self.display_message(_("extension.js not found"))
+                     raise Exception("Invalid extension")
+
+                 extension_uuid = None
+                 tmp_dir = tempfile.mkdtemp()
+                 ext_zip.extract(metadata_dot_json, tmp_dir)
+                 with open(os.path.join(tmp_dir, metadata_dot_json)) as file:
+                     try:
+                         extension_uuid = json.load(file)["uuid"]
+                     except:
+                         self.display_message(_("uuid not found"))
+                         raise Exception("Invalid extension")
+                 success = False
+                 if extension_uuid:
+                     success, updated = install_extension_zip_file(
+                                       self,
+                                       ext_zip,
+                                       '/'.join(zip_internal_path),
+                                       os.path.join(self.local_extension_dir,
+                                       extension_uuid))
+                 if success:
+                     if updated:
+                         message = _("%s extension updated") % extension_uuid
+                     else:
+                         message = _("%s extension installed") % extension_uuid
+                     self.display_message(message)
+                     self.display_message(_("Logout then login to restart your session"))
+                 else:
+                     self.display_message(_("Extension install failed"))
+             except:
+                 self.display_message(_("Invalid extension"))
+
+
+class AppWindow(Gtk.ApplicationWindow):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, modal=True, **kwargs)
+
+
+class Application(Gtk.Application):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, 
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE, 
+            application_id=parsed_args.id, **kwargs)
+        self.window = None
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+
+    def do_command_line(self, command_line):
+        self.do_activate()
+        return 0
+
+    def do_activate(self):
+        title = _("Gnome Shell Extension Zip Tool") 
+        if not self.window:
+            self.window = AppWindow(application=self, title=title)
+            self.window.set_position(Gtk.WindowPosition.CENTER)
+            main = Main(self.window)
+            self.window.show_all()
+
+if __name__ == "__main__":
+    app = Application()
+    app.run(sys.argv)
