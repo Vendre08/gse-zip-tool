@@ -41,7 +41,7 @@ def _(string):
     return string
 
 VERSION = "Version: 0.0.1"
-COMMIT = "Commit: 7d1822c56355042d966f6e9fc2127ae95df890be"
+COMMIT = "Commit: 7d884c06e24209cca17a611b59ed8d7d0a0fa8ba"
 
 
 class Main(object):
