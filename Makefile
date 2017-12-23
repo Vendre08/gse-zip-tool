@@ -3,10 +3,11 @@
 .ONESHELL:
 
 VERSION_EXISTS=$(shell [ -e ./VERSION ] && echo 1 || echo 0 )
-COMMIT=$(shell git rev-parse HEAD)
 
 ifeq ($(VERSION_EXISTS), 1)
 	VERSION=$(shell cat ./VERSION | grep ".0.")
+	COMMIT=$(shell git rev-parse HEAD)
+	sed -i 's,\"Commit:.*$\",\"Commit: $(COMMIT)\",' gse-zip-tool
 endif
 
 
@@ -16,11 +17,7 @@ version:
 		sed -i 's,\"Version:.*$\",\"Version: $(VERSION)\",' gse-zip-tool ; \
 	fi
 
-
 install:
-	if [ -n $(COMMIT) ]; then \
-		sed -i 's,\"Commit:.*$\",\"Commit: $(COMMIT)\",' gse-zip-tool ; \
-	fi
 	mkdir -p $(HOME)/.local/bin
 	chmod 0700 $(HOME)/.local/bin
 	cp -f gse-zip-tool $(HOME)/.local/bin
