@@ -1,6 +1,6 @@
 # gse-zip-tool - Gnome Shell Extension Zip Tool
 
-See https://bugzilla.gnome.org/show_bug.cgi?id=778677. The ability install
+See https://bugzilla.gnome.org/show_bug.cgi?id=778677. The ability to install
 or uninstall Gnome Shell extensions was removed from the gnome-tweak-tool
 Gnome Shell version 3.26.
 
