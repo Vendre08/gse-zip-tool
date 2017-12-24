@@ -42,8 +42,8 @@ parsed_args = parser.parse_args()
 def _(string):
     return string
 
-VERSION = "Version: 0.0.1"
-COMMIT = "Commit: 7d884c06e24209cca17a611b59ed8d7d0a0fa8ba"
+VERSION = "Version: 0.0.2"
+COMMIT = "Commit: f9ad1839882d5337a67de74e1ddea53491e18956"
 
 
 class Main(object):
