@@ -47,14 +47,7 @@ A Makefile is provided to install the application. Download and install
 
 To use the Makefile:
 
-1. $ make version - for maintainer's use only
-   This option sets the version number based upon a file named VERSION.
-   The VERSION file is not available on the remote Github repository.
-   The maintainer will bump the version number when a new version is
-   created.  If you have any problems with this application please
-   open an issue at  https://github.com/nls1729/gse-zip-tool .
-
-2. $ make install - installs the application and support files.
+1. $ make install - installs the application and support files.
    The Python executable is installed in $HOME/.local/bin.  The ui file
    is installed in ~/.local/share/gse-zip-tool.  The application
    icon is installed in ~/.local/share/gse-zip-tool.  The
@@ -62,7 +55,7 @@ To use the Makefile:
    installed in ~/.local/share/applications. The GSE Zip Tool can be
    executed from Show Applications in the Overview.
 
-3. $ make uninstall - uninstalls the application and support files.
+2. $ make uninstall - uninstalls the application and support files.
 
 This application has been tested on Fedora and Ubuntu with Gnome Shell
 version 3.26. 
