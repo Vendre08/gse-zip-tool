@@ -47,6 +47,9 @@ A Makefile is provided to install the application. Download and install
 
 To use the Makefile:
 
+Do NOT run Makefile as root.  The application is installed in the
+user's home directory.
+
 1. $ make install - installs the application and support files.
    The Python executable is installed in $HOME/.local/bin.  The ui file
    is installed in ~/.local/share/gse-zip-tool.  The application
