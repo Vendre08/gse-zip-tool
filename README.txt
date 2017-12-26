@@ -6,11 +6,7 @@ Gnome Shell version 3.26.
 
 Gnome Shell Extension Zip Tool is based on the code removed from the tweak
 tool. The application is provided for use by extension writers who need to
-install extensions from zip files and uninstall extensions.  A user who
-reports a problem with an extension may be asked to perform tests in order
-to find the source of the problem.  The user may be asked to install a test
-version of the extension by the extension writer.  In this case the user
-needs a simple means to install the extension zip file.
+install extensions from zip files and uninstall extensions.
 
 The application provides four toolbuttons:
 
@@ -51,7 +47,7 @@ Do NOT run Makefile as root.  The application is installed in the
 user's home directory.
 
 1. $ make install - installs the application and support files.
-   The Python executable is installed in $HOME/.local/bin.  The ui file
+   The Python executable is installed in ~/.local/bin.  The ui file
    is installed in ~/.local/share/gse-zip-tool.  The application
    icon is installed in ~/.local/share/gse-zip-tool.  The
    desktop file org.nls1729.gse-zip-tool.desktop is generated and
@@ -61,4 +57,5 @@ user's home directory.
 2. $ make uninstall - uninstalls the application and support files.
 
 This application has been tested on Fedora and Ubuntu with Gnome Shell
-version 3.26. 
+version 3.26.
+ 
