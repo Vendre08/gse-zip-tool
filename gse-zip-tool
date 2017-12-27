@@ -48,7 +48,7 @@ def _(string):
 
 
 VERSION = "Version: 0.0.2"
-COMMIT = "Commit: f21693687e049963aa2330be5762fb262aff0a2f"
+COMMIT = "Commit: bd3a7a8fc437444a7bd8272ec4f50872da4fea45"
 
 
 class Main(object):
@@ -138,8 +138,8 @@ class Main(object):
             with open(metadata_dot_json) as file:
                 try:
                     name = json.load(file)["name"]
-                except Exception as e:
-                    raise Exception(_("name not found") + " %s " % str(e))
+                except Exception as err:
+                    raise Exception(_("name not found") + " %s " % err)
                 title = _("Uninstall Extension")
                 name_uuid = name + '  (uuid ' + uuid + ')'
                 question = _("Do you want to uninstall ") + name_uuid
@@ -154,7 +154,11 @@ class Main(object):
                 response = dialog.run()
                 if response == Gtk.ResponseType.YES:
                     if os.path.exists(target):
-                        shutil.rmtree(target)
+                        try:
+                            shutil.rmtree(target)
+                        except Exception as err:
+                            dialog.destroy()
+                            raise Exception(_("remove failed") + " %s " % err)
                         self.show_msg(_("Uninstall completed ") + name)
                         self.show_msg(_("Logout, login to restart session"))
                     else:
@@ -162,8 +166,8 @@ class Main(object):
                 else:
                     self.show_msg(_("Uninstall cancelled"))
                 dialog.destroy()
-        except Exception as e:
-            self.show_msg(_("Invalid extension") + " %s " % str(e))
+        except Exception as err:
+            self.show_msg(_("Uninstall failed") + " %s " % err)
 
     def install_zip(self, zip_file_name):
         def install_extension_zip_file(that, member, zip_internal_path, dest):
@@ -177,9 +181,9 @@ class Main(object):
                     update = True
                 member.extractall(tmp_dir)
                 shutil.copytree(tmp_destination, dest)
-            except Exception as e:
+            except Exception as err:
                 success = False
-                that.show_msg(_("Error installing zip") + " %s " % str(e))
+                that.show_msg(_("Error installing zip") + " %s " % err)
             if success:
                 that.show_msg(_("Installation complete"))
             return success, update
@@ -206,8 +210,8 @@ class Main(object):
                 with open(os.path.join(tmp_dir, metadata_dot_json)) as file:
                     try:
                         ext_uuid = json.load(file)["uuid"]
-                    except Exception as e:
-                        raise Exception(_("uuid not found") + " %s " % str(e))
+                    except Exception as err:
+                        raise Exception(_("uuid not found") + " %s " % err)
                 success = False
                 if ext_uuid:
                     int_path = '/'.join(zip_internal_path)
@@ -225,8 +229,8 @@ class Main(object):
                     self.show_msg(_("Logout, login to restart session"))
                 else:
                     self.show_msg(_("Extension install failed"))
-            except Exception as e:
-                self.show_msg(_("Invalid extension") + " %s " % str(e))
+            except Exception as err:
+                self.show_msg(_("Install failed") + " %s " % err)
 
 
 class AppWindow(Gtk.ApplicationWindow):
