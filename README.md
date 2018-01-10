@@ -4,9 +4,9 @@ See https://bugzilla.gnome.org/show_bug.cgi?id=778677. The ability to install
 or uninstall Gnome Shell extensions was removed from the gnome-tweak-tool
 Gnome Shell version 3.26.
 
-Gnome Shell Extension Zip Tool is based on the code removed from the tweak
-tool. The application is provided for use by extension writers who need to
-install extensions from zip files and uninstall extensions.
+Gnome Shell Extension Zip Tool is based, mutatis mutandis, on the code
+removed from the tweak tool. The application is provided for use by extension
+writers who need to install extensions from zip files and uninstall extensions.
 
 The application provides four toolbuttons:
 

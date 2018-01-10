@@ -16,6 +16,7 @@ install:
 	fi
 	mkdir -p $(HOME)/.local/bin
 	chmod 0700 $(HOME)/.local/bin
+	chmod 0755 gse-zip-tool
 	cp -f gse-zip-tool $(HOME)/.local/bin
 	mkdir -p $(HOME)/.local/share/gse-zip-tool
 	chmod 0700 $(HOME)/.local/share/gse-zip-tool
