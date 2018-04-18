@@ -12,21 +12,20 @@ The application provides four toolbuttons:
 
 1. About - Displays an about dialog with the usual about information.
 
-2. Open - file chooser for selection of the zip file to install or the
-   local gnome shell extension's directory to uninstall.
-
-3. Install - toggle button when selected places application in install mode.
-   Only a zip file can be selected.  The zip file is examied to insure the
+2. Install - toggle button when selected places application in install mode.
+   Only a zip file can be selected.  The zip file is examined to insure the
    file contains a Gnome Shell extension.
 
-4. Uninstall - toggle button when selected places application in uninstall
+3. Uninstall - toggle button when selected places application in uninstall
    mode.  When the file chooser is opened the local extension directory
    is displayed. Only a directory with an ampersand in its name can be
    selected for removal.
 
-5. When the user opens the selected zip file or local extension directory
-   the install or uninstall is performed and the user is directed to restart
-   the Gnome Shell session (logout/login) to complete the operation.
+4. Open - file chooser for selection of the zip file to install or the
+   local gnome shell extension's directory to uninstall. When the user opens
+   the selected zip file or local extension directory the install or uninstall
+   is performed and the user is directed to restart the Gnome Shell session
+   (logout/login) to complete the operation.
 
 
 A Makefile is provided to install the application. Download and install
